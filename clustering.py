@@ -11,7 +11,7 @@ import numpy as np
 import random
 
 def cal_dis(dataset,center):
-    center_mat = np.tile(center,(1,dataset.shape[0]))
+    center_mat = np.tile(center,(dataset.shape[0],1))
     distance_mat = np.square(dataset[:,0] - center_mat[:,0])+np.square(dataset[:,1] - center_mat[:,1])+np.square(dataset[:,2] - center_mat[:,2])
     return distance_mat
                         
@@ -19,12 +19,13 @@ def cal_dis(dataset,center):
 def kmeans(dataset, num_clusters, max_iter):
     #Set initial center
     num_points = dataset.shape[0]
+    random.seed(1)
     centers_idx = random.sample(range(0,num_points-1),num_clusters)
     iteration = 0
     while(1):
         dis_mat = []
         for i in range(num_clusters):
-            center_tmp = np.expand_dims(dataset[centers_idx[i]],0)
+            center_tmp = np.expand_dims(dataset[centers_idx[i]],0) #dataset[centers_idx[i]]->(3,)
             dis = cal_dis(dataset,center_tmp)
             dis_mat.append(dis)
         dis_mat = np.array(dis_mat)
@@ -36,7 +37,7 @@ def kmeans(dataset, num_clusters, max_iter):
             c_index = np.where(min_dis==c)
             cur_data = dataset[c_index]
             mean_data = np.mean(cur_data,axis=0)
-            new_center.append(np.argmin(cal_dis(dataset,mean_data)))
+            new_center.append(np.argmin(cal_dis(dataset,np.expand_dims(mean_data,0))))
         centers_idx = new_center
         iteration += 1
             
@@ -75,7 +76,8 @@ def show_plot(points,res,num_clusters):
 
 
 data = np.load('visulization/ori_pc.npy')
-num_clusters = 50
-res = kmeans(data,num_clusters,100)
-print(res.shape)
+num_clusters = 10
+res = kmeans(data,num_clusters,2)
+show_plot(data,res,num_clusters)
+res = kmeans(data,num_clusters,50)
 show_plot(data,res,num_clusters)
